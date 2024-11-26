@@ -10,7 +10,7 @@ onMounted(async () => {
     const token = keycloak.token; // Lấy token từ Keycloak
     console.log("Using token: ", token); // Inspect the token value
 
-    const response = await axios.get('http://user.service.openlearnhub.io.vn/api/v1/users', {
+    const response = await axios.get('https://user.service.openlearnhub.io.vn/api/v1/users', {
       headers: {
         Authorization: `Bearer ${token}`, // Gửi token qua header
       },
