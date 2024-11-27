@@ -50,6 +50,7 @@ const updateUser = async () => {
     <header class="header">
       <img src="https://via.placeholder.com/50" alt="Avatar" class="avatar" />
       <h2>Welcome, {{ user?.username || "User" }}!</h2>
+      <h2>Chúc bạn may mắn lần sau</h2>
     </header>
 
     <!-- Form -->
