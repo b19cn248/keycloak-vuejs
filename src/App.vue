@@ -50,13 +50,13 @@ const updateUser = async () => {
     <header class="header">
       <img src="https://via.placeholder.com/50" alt="Avatar" class="avatar" />
       <h2>Welcome, {{ user?.username || "User" }}!</h2>
-      <h2>Chúc bạn may mắn lần sau</h2>
     </header>
 
     <!-- Form -->
     <div class="content">
 <!--      <h1>Chào bạn nhé , {{ user?.first_name || "User" }}!</h1>-->
       <h1>Chào bạn nhé, {{ user ? `${user.first_name || 'User'} ${user.last_name || ''}`.trim() : 'User' }}!</h1>
+      <h1>Chúc bạn may mắn lần sau</h1>
       <div v-if="user" class="form">
         <div class="form-group">
           <label for="username">Username</label>
