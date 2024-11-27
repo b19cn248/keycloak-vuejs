@@ -16,7 +16,7 @@ onMounted(async () => {
       return;
     }
 
-    const response = await axios.get(`https://keycloak.openlearnhub.io.vn/api/v1/users/email/${email}`, {
+    const response = await axios.get(`https://user.service.openlearnhub.io.vn/api/v1/users/email/${email}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
