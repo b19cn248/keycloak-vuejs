@@ -3,121 +3,184 @@ import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import keycloak from "@/keycloak.js";
 
-const users = ref([]);
+const user = ref(null);
+const message = ref(null); // Thêm thông báo trạng thái
 
 onMounted(async () => {
   try {
-    const token = keycloak.token; // Lấy token từ Keycloak
-    console.log("Using token: ", token); // Inspect the token value
+    const token = keycloak.token;
+    const email = keycloak.tokenParsed?.email;
 
-    const response = await axios.get('https://user.service.openlearnhub.io.vn/api/v1/users', {
+    if (!token || !email) {
+      console.error('Token or email not found');
+      return;
+    }
+
+    const response = await axios.get(`http://localhost:8080/api/v1/users/email/${email}`, {
       headers: {
-        Authorization: `Bearer ${token}`, // Gửi token qua header
-      },
-      params: {
-        page: 0,
-        size: 10,
+        Authorization: `Bearer ${token}`,
       },
     });
 
-    users.value = response.data;
+    user.value = response.data;
   } catch (error) {
-    console.error('Error fetching users:', error.response ? error.response : error);
+    console.error('Error fetching user:', error.response ? error.response : error);
   }
 });
 
-
-
+const updateUser = async () => {
+  try {
+    const token = keycloak.token;
+    await axios.put(
+        `http://localhost:8080/api/v1/users/${user.value.id}`,
+        user.value,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
+    message.value = "User information updated successfully!";
+  } catch (error) {
+    message.value = "Failed to update user information.";
+    console.error(error);
+  }
+};
 </script>
 
 <template>
   <div class="container">
-    <h1>User Information</h1>
-    <div class="table-wrapper">
-      <table class="user-table">
-        <thead>
-        <tr>
-          <th>ID</th>
-          <th>Username</th>
-          <th>Email</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="user in users" :key="user.id">
-          <td>{{ user.id }}</td>
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.first_name }}</td>
-          <td>{{ user.last_name }}</td>
-          <td>{{ user.status ? 'Active' : 'Inactive' }}</td>
-        </tr>
-        </tbody>
-      </table>
+    <!-- Header -->
+    <header class="header">
+      <img src="https://via.placeholder.com/50" alt="Avatar" class="avatar" />
+      <h2>Welcome, {{ user?.username || "User" }}!</h2>
+    </header>
+
+    <!-- Form -->
+    <div class="content">
+<!--      <h1>Chào bạn nhé , {{ user?.first_name || "User" }}!</h1>-->
+      <h1>Chào bạn nhé, {{ user ? `${user.first_name || 'User'} ${user.last_name || ''}`.trim() : 'User' }}!</h1>
+      <div v-if="user" class="form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" v-model="user.username" disabled />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" v-model="user.email" disabled />
+        </div>
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input type="text" id="firstName" v-model="user.first_name" />
+        </div>
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input type="text" id="lastName" v-model="user.last_name" />
+        </div>
+        <div class="form-group">
+          <label for="status">Status</label>
+          <select id="status" v-model="user.status">
+            <option value="true">Active</option>
+            <option value="false">Inactive</option>
+          </select>
+        </div>
+        <!-- Save Button -->
+        <button @click="updateUser">Save Changes</button>
+        <!-- Message -->
+        <p v-if="message" class="message">{{ message }}</p>
+      </div>
+      <div v-else>
+        <p>Loading user information...</p>
+      </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>&copy; 2024 Your Company. All Rights Reserved.</p>
+    </footer>
   </div>
 </template>
 
 <style scoped>
+/* General Styles */
 .container {
   margin: 20px auto;
-  max-width: 90%; /* Tăng chiều ngang tổng thể */
+  max-width: 700px;
   font-family: Arial, sans-serif;
+  color: #333;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 20px;
-  font-size: 28px;
+  font-size: 24px;
   color: #333;
 }
 
-.table-wrapper {
-  overflow-x: auto; /* Đảm bảo bảng cuộn ngang nếu nội dung quá lớn */
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.user-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 0 auto;
-}
-
-.user-table th,
-.user-table td {
-  border: 1px solid #ddd;
-  padding: 12px 20px; /* Tăng padding để dữ liệu thoáng hơn */
-  text-align: left;
-  word-wrap: break-word;
-}
-
-.user-table th {
-  background-color: #4CAF50;
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  background-color: #4caf50;
   color: white;
+  border-radius: 10px;
+}
+
+.avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.content {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+label {
   font-weight: bold;
+  margin-bottom: 5px;
+}
+
+input,
+select {
   font-size: 16px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
 }
 
-.user-table td {
+button {
+  font-size: 16px;
+  padding: 10px 20px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+.message {
+  margin-top: 10px;
   font-size: 14px;
+  color: green;
 }
 
-.user-table tr:nth-child(even) {
-  background-color: #f2f2f2; /* Tô màu xen kẽ cho các dòng */
-}
-
-.user-table tr:hover {
-  background-color: #ddd; /* Hiệu ứng hover */
-}
-
-@media (min-width: 768px) {
-  .user-table {
-    font-size: 16px; /* Tăng kích thước chữ cho màn hình lớn hơn */
-  }
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #555;
 }
 </style>
