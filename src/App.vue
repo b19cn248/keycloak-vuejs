@@ -56,7 +56,7 @@ const updateUser = async () => {
     <div class="content">
 <!--      <h1>Chào bạn nhé , {{ user?.first_name || "User" }}!</h1>-->
       <h1>Chào bạn nhé, {{ user ? `${user.first_name || 'User'} ${user.last_name || ''}`.trim() : 'User' }}!</h1>
-      <h1>Chúc bạn may mắn lần sau</h1>
+      <h1 style="color: blueviolet">Không có quà đâu, chỉ có cái ... thôi</h1>
       <div v-if="user" class="form">
         <div class="form-group">
           <label for="username">Username</label>
